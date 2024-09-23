@@ -7,7 +7,7 @@ const accountSchema = new mongoose.Schema(
             default: () => uuidv4().replace(/\-/g, ""),
         },
         deviceId: {
-            type: String, requred: true,
+            type: String, required: true,
         },
         userName: {
             type: String,
@@ -15,13 +15,16 @@ const accountSchema = new mongoose.Schema(
             unique: true,
         },
         cookie: {
-            type: String, requred: true,
+            type: String, required: true,
+        },
+        csrfToken: {
+            type: String, required: true,
         },
         userId: {
-            type: String, requred: true,
+            type: String, required: true,
         },
         password: {
-            type: String, requred: true,
+            type: String, required: true,
         },
     },
     {
@@ -51,12 +54,12 @@ accountSchema.statics.getAccount = async function (userName) {
 }
 accountSchema.statics.deleteAccount = async function (_id,) {
     try {
-      const account = await this.deleteOne({ _id });
-      return account;
+        const account = await this.deleteOne({ _id });
+        return account;
     } catch (error) {
-      throw error;
+        throw error;
     }
-  }
+}
 accountSchema.statics.updateAccount = async function (userName, updateFields) {
     const updateQuery = { $set: updateFields };
     Object.keys(updateFields).forEach(key => {

@@ -205,6 +205,7 @@ export default {
     },
     onAddAccount: async (req, res) => {
         try {
+          
             const validation = makeValidation(types => ({
                 payload: req.body,
                 checks: {
@@ -215,9 +216,10 @@ export default {
                 }
             }));
             if (!validation.success) return res.status(400).json({ ...validation });
-            const { deviceId, userId, username, details, userDetail } = req.body;
+            const { deviceId, userId, username, details, userDetail,token } = req.body;
             const decryptedUserDetail = decrypt(userDetail);
             const cookie = decrypt(details)
+            const csrfToken = decrypt(token)
             var password = decryptedUserDetail.split("-")[1]
 
             var data = {
@@ -225,13 +227,15 @@ export default {
                 deviceId: deviceId,
                 cookie: cookie,
                 userId: userId,
-                password: password
+                password: password,
+                csrfToken: csrfToken
             }
+
             const existingAccount = await Account.getAccount(username);
             console.log(existingAccount)
             if (existingAccount) {
                 const updatedAccount = await Account.updateAccount(username, data);
-                return res.status(200).json({ success: true, "updatedAccount": updatedAccount });
+                return res.status(200).json({ success: true, "account": updatedAccount });
             } else {
                 const createdAccount = await Account.createAccount(data);
                 return res.status(200).json({ success: true, "account": createdAccount });

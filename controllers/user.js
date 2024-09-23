@@ -4,7 +4,7 @@ import makeValidation from '@withvoid/make-validation';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
 import axios from 'axios';
-import Api from '../Utils/Api.js';
+import Api from '../utils/api.js';
 import decrypt from '../utils/decrypt.js';
 import Account from '../models/Account.js';
 const api = new Api();

@@ -1,0 +1,30 @@
+{
+  "name": "goalkolik",
+  "version": "1.0.0",
+  "description": "Spor app",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "Mustafa Bütün",
+  "license": "ISC",
+  "dependencies": {
+    "@withvoid/make-validation": "^1.0.5",
+    "axios": "^1.7.7",
+    "chatgpt": "^5.2.5",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "firebase-admin": "^12.5.0",
+    "fs": "^0.0.1-security",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.6.2",
+    "pm2": "^5.4.2",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

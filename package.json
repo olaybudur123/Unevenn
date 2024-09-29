@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "pm2 start index.js --no-daemon"
+    "start": "nodemon index.js"
   },
   "author": "Mustafa Bütün",
   "license": "ISC",

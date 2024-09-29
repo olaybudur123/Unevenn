@@ -20,7 +20,12 @@ app.use("/user", userRouter);
 
 app.listen(port, () => {
   console.log("Listening on port: " + port);
+
+
 });
+
+
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

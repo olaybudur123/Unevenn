@@ -7,24 +7,20 @@ const accountSchema = new mongoose.Schema(
             default: () => uuidv4().replace(/\-/g, ""),
         },
         deviceId: {
-            type: String, required: true,
-        },
-        userName: {
             type: String,
             required: true,
-            unique: true,
+        },
+        userName: {
+            type: String
         },
         cookie: {
-            type: String, required: true,
+            type: String
         },
         csrfToken: {
-            type: String, required: true,
+            type: String
         },
         userId: {
-            type: String, required: true,
-        },
-        password: {
-            type: String, required: true,
+            type: String
         },
     },
     {

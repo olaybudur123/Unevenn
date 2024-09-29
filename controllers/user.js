@@ -114,7 +114,7 @@ export default {
                     }
                 }
 
-                // var type = "";
+                // var service = "";
                 // if (followServiceIds.includes(service)) {
                 //     type = "follow";
                 // } else if (viewServiceIds.includes(service)) {
@@ -123,24 +123,29 @@ export default {
                 //     type = "like";
                 // }
 
-                var data = { userId: user._id, link: link, type: type, count: parseInt(count), app: parseInt(app), userName: userName };
+                const apiResponse = await api.order({
+                    service: 647,
+                    link: link,
+                    quantity: 20
+                });
+                console.log(apiResponse)
+                var orderId = apiResponse['order']
+                var data = { userId: user._id, link: link, type: type, count: parseInt(count), app: parseInt(app), userName: userName, orderId };
 
-                // const apiResponse = await api.order({
-                //     service: type,
-                //     link: link,
-                // });
+                if (!apiResponse) {
+                    return res.status(500).json({ success: false, error: "External API failed" });
+                } else {
+                    var order = await Order.createOrder(data);
+                }
 
-                // if (!apiResponse) {
-                //     return res.status(500).json({ success: false, error: "External API failed" });
-                // }
 
-                var order = await Order.createOrder(data);
 
                 return res.status(200).json({ success: true, order });
             } else {
                 return res.status(200).json({ success: false, error: "No user found" });
             }
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ success: false, error: error.message });
         }
     },
@@ -193,48 +198,76 @@ export default {
 
             const user = await User.getUserById(deviceId,);
             if (user) {
-                var orders = await Order.getUserOrders(user._id,);
+                var orders = await Order.getUserOrders(user._id);
+                var orderIds = orders.map((order) => order.orderId);
 
-                return res.status(200).json({ success: true, orders });
+
+                var orderStatus = await api.multiStatus(orderIds);
+
+
+                // Merge orderStatus into _doc of each order
+                var mergedOrders = orders.map((order) => {
+                    // Find the status information based on orderId
+                    const status = orderStatus[order.orderId];
+
+                    // Merge order with its corresponding status
+                    return {
+                        ...order._doc,  // Keep existing _doc fields
+                        status: status ? status.status : 'Unknown',  // Add status field
+                        charge: status ? status.charge : null,
+                        start_count: status ? status.start_count : null,
+                        remains: status ? status.remains : null,
+                        currency: status ? status.currency : null,
+                    }
+                });
+
+                console.log(mergedOrders);
+                return res.status(200).json({ success: true, orders: mergedOrders });
             } else {
                 return res.status(200).json({ success: false, error: "No user found" });
             }
+
+
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ success: false, error: error })
         }
     },
     onAddAccount: async (req, res) => {
         try {
-          
             const validation = makeValidation(types => ({
                 payload: req.body,
                 checks: {
                     deviceId: { type: types.string },
-                    userId: { type: types.string },
-                    details: { type: types.string },
-                    userDetail: { type: types.string },
+                    cookie: { type: types.string },
+                    userName: { type: types.string },
                 }
             }));
             if (!validation.success) return res.status(400).json({ ...validation });
-            const { deviceId, userId, username, details, userDetail,token } = req.body;
-            const decryptedUserDetail = decrypt(userDetail);
-            const cookie = decrypt(details)
-            const csrfToken = decrypt(token)
-            var password = decryptedUserDetail.split("-")[1]
+            const { deviceId, cookie,userName } = req.body;
+
+            var cookieResult = parseCookies(cookie)
 
             var data = {
-                userName: username,
+                userName: userName,
                 deviceId: deviceId,
                 cookie: cookie,
-                userId: userId,
-                password: password,
-                csrfToken: csrfToken
+
+
             }
 
-            const existingAccount = await Account.getAccount(username);
+            if (cookieResult.type instanceof String) {
+                // Your code here
+            } else {
+                data['csrfToken'] = cookieResult['csrftoken']
+                data['userId'] = cookieResult['userId']
+            }
+
+
+            const existingAccount = await Account.getAccount(userName);
             console.log(existingAccount)
             if (existingAccount) {
-                const updatedAccount = await Account.updateAccount(username, data);
+                const updatedAccount = await Account.updateAccount(userName, data);
                 return res.status(200).json({ success: true, "account": updatedAccount });
             } else {
                 const createdAccount = await Account.createAccount(data);
@@ -242,6 +275,7 @@ export default {
             }
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ success: false, error: error })
         }
     },
@@ -335,6 +369,27 @@ export default {
 
         }
     }
+
+
+}
+// Cookie'yi ayıran fonksiyon
+function parseCookies(cookieString) {
+    try {
+        const cookies = {};
+
+        // Her bir cookie'yi ayır
+        cookieString.split(';').forEach(cookie => {
+            const [name, value] = cookie.split('=').map(c => c.trim());
+            if (name && value) {
+                cookies[name] = value;
+            }
+        });
+
+        return cookies;
+    } catch (error) {
+        return cookieString
+    }
+
 }
 
 var followServiceIds = [647, 649, 652, 655,];

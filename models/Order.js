@@ -27,6 +27,9 @@ const orderSchema = new mongoose.Schema(
         }, app: {
             type: Number,
             required: true
+        }, orderId: {
+            type: String,
+            required: true
         },
     },
     {

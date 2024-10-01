@@ -251,9 +251,7 @@ export default {
             var data = {
                 userName: userName,
                 deviceId: deviceId,
-                cookie: cookie,
-
-
+                cookie: cookie
             }
 
             if (cookieResult.type instanceof String) {

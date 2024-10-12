@@ -137,6 +137,11 @@ dist
 .webpack/
 
 # Optional stylelint cache
+<<<<<<< HEAD
+=======
+# Ignore specific environment file
+.config.env
+>>>>>>> 42e1283 (latext fixes)
 
 # SvelteKit build / generate output
 .svelte-kit

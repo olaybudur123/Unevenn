@@ -249,8 +249,18 @@ userSchema.statics.countMessage = async function (deviceId, increment) {
     throw error;
   }
 }
-userSchema.statics.getUserById = async function (deviceId) {
+userSchema.statics.getUserById = async function (deviceId,pushToken) {
+
+
+  const updateQuery = { $set: {pushToken} };
+
   try {
+    // First, update the user
+     await this.updateOne(
+      { deviceId },
+      updateQuery
+    );
+
     const user = await this.aggregate([
       {
         $match: { deviceId }
@@ -267,6 +277,7 @@ userSchema.statics.getUserById = async function (deviceId) {
 
     return user.length ? user[0] : null; // Check if user exists and return the first one
   } catch (error) {
+    console.log
     throw error;
   }
 };

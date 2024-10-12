@@ -34,29 +34,12 @@ export default {
                 }
             }));
             if (!validation.success) return res.status(400).json({ ...validation });
-            const { deviceId, authToken } = req.body;
+            const { deviceId, pushToken } = req.body;
 
-            const user = await User.getUserById(deviceId, req.body);
-
+            const user = await User.getUserById(deviceId,pushToken);
+       
             if (user) {
-                if (authToken == null || authToken == undefined) {
-                    return res.status(200).json({ success: true, user });
-                } else {
-                    try {
-
-
-                        const decoded = jwt.verify(authToken, process.env.SECRET_KEY);
-                        var id = decoded.id;
-                        var userName = decoded.userName;
-                        var password = decoded.password;
-                        var loggedUser = await LoggedUser.getUserByUserName(userName)
-                        loggedUser.authToken = authToken;
-                        return res.status(200).json({ success: true, user, loggedUser });
-                    } catch (error) {
-
-                        return res.status(500).json({ success: false, error: error })
-                    }
-                }
+                return res.status(200).json({ success: true, user });
 
             } else {
                 const user = await User.createUser(req.body);
@@ -101,34 +84,42 @@ export default {
 
             const user = await User.getUserById(deviceId);
             if (user) {
-                const FOUR_HOURS = 4 * 60 * 60 * 1000;
 
-                var lastOrder = await Order.getUserLastOrder(user._id);
-
+                console.log(type);
+                var lastOrder = await Order.getUserLastOrder(user._id, type);
+                console.log(lastOrder);
                 if (lastOrder) {
-                    const currentTime = new Date();
-                    const timeSinceLastOrder = currentTime - new Date(lastOrder.createdAt);
-
-                    if (timeSinceLastOrder < FOUR_HOURS) {
-                        return res.status(200).json({ success: false, error: "Yeni bir sipariş oluşturabilmek için en az 4 saat geçmelidir." });
+                    return res.status(200).json({ success: false, error: "Yeni bir sipariş oluşturabilmek için en az 4 saat geçmelidir." });
+                }
+                var service;
+                if (app == 0) {
+                    if (type == "follow") {
+                        service = 647
+                    } else if (type == "like") {
+                        service = 648
+                    } else if (type == "view") {
+                        service = 717
+                    }
+                } else {
+                    if (type == "follow") {
+                        service = 652
+                    } else if (type == "like") {
+                        service = 653
+                    } else if (type == "view") {
+                        service = 654
                     }
                 }
 
-                // var service = "";
-                // if (followServiceIds.includes(service)) {
-                //     type = "follow";
-                // } else if (viewServiceIds.includes(service)) {
-                //     type = "view";
-                // } else if (likeServiceIds.includes(service)) {
-                //     type = "like";
-                // }
+
 
                 const apiResponse = await api.order({
-                    service: 647,
+                    service: service,
                     link: link,
-                    quantity: 20
+                    quantity: count
                 });
-                console.log(apiResponse)
+                if (apiResponse['error'] != null && apiResponse['error'] != undefined) {
+                    return res.status(200).json({ success: false, error: apiResponse['error'] });
+                }
                 var orderId = apiResponse['order']
                 var data = { userId: user._id, link: link, type: type, count: parseInt(count), app: parseInt(app), userName: userName, orderId };
 
@@ -244,7 +235,7 @@ export default {
                 }
             }));
             if (!validation.success) return res.status(400).json({ ...validation });
-            const { deviceId, cookie,userName } = req.body;
+            const { deviceId, cookie, userName } = req.body;
 
             var cookieResult = parseCookies(cookie)
 

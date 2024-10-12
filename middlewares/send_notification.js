@@ -2,17 +2,15 @@ import dotenv from 'dotenv';
 import admin from 'firebase-admin';
 dotenv.config({ path: "./config.env" });
 export function sendNoti(title, body, pushToken, data) {
-
+  const messaging = admin.messaging();
   var message = {
-    to: pushToken,
+    token: pushToken,
     notification: {
       title: title,
-      body: body,
-      sound: "default",
-      badge: 0
-    },
-    data: data
+      body: body
+    }
   };
+
 
   messaging.send(message)
     .then((response) => {
